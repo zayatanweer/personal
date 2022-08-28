@@ -66,6 +66,7 @@ For every purchase we save an order document in the orders collection. isFreeApp
 2. Validate the userId. Send error if userId is invalid
 3. Validate the productId. Send the error if productId is invalid
 4. Now write the logic for order creation. 3 scenarios
+
 - //Scenario 1
 For paid user app and the user has sufficient balance. We deduct the balance from user's balance and update the user. We create an order document
 
