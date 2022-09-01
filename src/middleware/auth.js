@@ -5,7 +5,9 @@ const { default: mongoose } = require("mongoose");
 // --------------Authentication------------
 
 const authentication = async function (req, res) {
-    let userName = req.body.emailId;
+
+   try {
+     let userName = req.body.emailId;
     let password = req.body.password;
     let user = await userModel.findOne({ emailId: userName, password: password });
     let token = jwt.sign(
@@ -17,34 +19,44 @@ const authentication = async function (req, res) {
         "zaya-17-secret.key"
       );
       res.setHeader("x-auth-token", token);
-      res.send({ status: true, token: token });
+      res.status(201).send({ status: true, token: token });
+    }catch(err){
+      console.log(err)
+    return res.status(401).send({ status: false, msg: err.messge });
+    }
     };
 
 // --------------Authorization------------
 
 const authorization = async function (req, res, next) {
-  let token = req.headers["x-Auth-token"];
+  
+  try{
+    let token = req.headers["x-Auth-token"];
   if (!token) token = req.headers["x-auth-token"];
   if (!token) {
-    return res.send({ status: false, msg: "Token must be present" });
+    return res.status(400).send({ status: false, msg: "Token must be present" });
   }
   let decodedToken = jwt.verify(token, "zaya-17-secret.key", (err, decode)=>{
     if (err){
-        return res.send("you have enter invalid token")
+        return res.status(401).send("You have enter invalid token")
     }(decode == true)
     next()
-  });
+  });} catch(err){
+    console.log(err)
+    return res.status(500).send({ status: false, msg: err.messge });
+  }
+}
 
   // if (!decodedToken) {
   //   return res.send({ status: false, msg: "Token is invalid" });
   // }
-}
 
   const authorization1 = async function (req, res, next) {
-    let token = req.headers["x-Auth-token"];
+ try{
+     let token = req.headers["x-Auth-token"];
     if (!token) token = req.headers["x-auth-token"];
     if (!token) {
-      return res.send({ status: false, msg: "Token must be present" });
+      return res.status(400).send({ status: false, msg: "Token must be present" });
     }
     let decodedToken = jwt.verify(token, "zaya-17-secret.key")
 
@@ -54,18 +66,21 @@ const authorization = async function (req, res, next) {
   let isValid = mongoose.Types.ObjectId.isValid(userToBeModified)
 
   if(isValid === false){
-    return res.send("lenth of the id less then 24 digit")
+    return res.status(401).send("lenth of the id is less then 24 digit or invalid userId")
   }
   else if (!decodedToken){
-    return res.send({status: false, msg: "token is invalid"})
+    return res.status(401).send({status: false, msg: "token is invalid"})
   }
   else if (userToBeModified != userLoggedin) {
-    return res.send({
+    return res.status(403).send({
       status: false,
       msg: "user loggedin not allowed to modify changes",
     });
   }
-  next();
+  next();} catch(err){
+    console.log(err)
+    return res.status(500).send({ status: false, msg: err.messge });
+  }
 };
 
 module.exports = { authentication, authorization, authorization1 };
